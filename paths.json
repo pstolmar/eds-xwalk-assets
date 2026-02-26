@@ -1,0 +1,11 @@
+{
+  "mappings": [
+    "/content/eds-xwalk-assets/:/",
+    "/content/eds-xwalk-assets/configuration:/.helix/config.json",
+    "/content/image-demo/xwalk/:/image-demo/xwalk/"
+  ],
+  "includes": [
+    "/content/eds-xwalk-assets/",
+    "/content/image-demo/xwalk/"
+  ]
+}
