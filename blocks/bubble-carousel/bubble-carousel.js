@@ -1,24 +1,28 @@
-function initBubbleAnimation(container, bubbles) {
+function initBubbleAnimation(pool, bubbles) {
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    container.classList.add('bubble-carousel--reduced-motion');
+    pool.classList.add('bubble-carousel--reduced-motion');
     return;
   }
 
-  const assignBubble = (bubble, index) => {
-    const x = 10 + Math.random() * 80; // 10%–90%
-    const delay = index * 2 + Math.random(); // slight stagger
-    bubble.style.setProperty('--bubble-x', `${x}%`);
-    bubble.style.animationDelay = `${delay}s`;
-  };
-
-  bubbles.forEach(assignBubble);
+  const count = bubbles.length || 1;
+  const step = 100 / (count + 1);
 
   bubbles.forEach((bubble, index) => {
-    bubble.addEventListener('animationiteration', () => assignBubble(bubble, index));
+    let x = step * (index + 1);
+    const jitter = (Math.random() - 0.5) * step * 0.4; // ±20% of step
+    x += jitter;
+    if (x < 5) x = 5;
+    if (x > 95) x = 95;
+
+    const duration = 12 + Math.random() * 10; // 12–22s
+    const delay = index * 2 + Math.random() * 2; // stagger more
+
+    bubble.style.setProperty('--bubble-x', `${x}%`);
+    bubble.style.animationDuration = `${duration}s`;
+    bubble.style.animationDelay = `${delay}s`;
   });
 }
 
-// Find or create a shared pool container within the closest section.
 function getOrCreatePool(block) {
   const section = block.closest('.section, main, body') || document.body;
   let pool = section.querySelector('.bubble-carousel-pool');
@@ -58,23 +62,19 @@ export default function decorate(block) {
 
   bubble.append(bubbleImg);
 
-  // Replace block content with a lightweight marker to keep UE happy.
+  // Keep a small marker in the original block so it stays clickable in UE,
+  // but don't let it take a ton of vertical space.
   block.innerHTML = '';
   block.classList.add('bubble-carousel-origin');
 
-  // Add the bubble into a shared pool for this section.
+  const marker = document.createElement('div');
+  marker.classList.add('bubble-carousel-marker');
+  marker.textContent = 'Bubble';
+  block.append(marker);
+
   const pool = getOrCreatePool(block);
   pool.append(bubble);
 
-  // Instrument shared pool once per section.
-  if (!pool.dataset.aueInitialized) {
-    pool.setAttribute('data-aue-type', 'component');
-    pool.setAttribute('data-aue-label', 'Bubble Carousel');
-    pool.setAttribute('data-aue-model', 'bubble-carousel');
-    pool.dataset.aueInitialized = 'true';
-  }
-
-  // Start / update animation.
   const bubbles = Array.from(pool.querySelectorAll('.bubble'));
   initBubbleAnimation(pool, bubbles);
 }

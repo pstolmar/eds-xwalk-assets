@@ -5,6 +5,24 @@
   overflow: hidden;
 }
 
+.bubble-carousel-pool {
+  margin-block: 2rem;
+}
+
+/* Small marker in the original block so it stays clickable in UE */
+.bubble-carousel-origin {
+  margin: 0.25rem 0;
+}
+
+.bubble-carousel-marker {
+  display: inline-block;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.75rem;
+  border-radius: 0.25rem;
+  background: #f3f3f3;
+  color: #555;
+}
+
 .bubble {
   position: absolute;
   border-radius: 50%;
