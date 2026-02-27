@@ -22,12 +22,12 @@ function initBubbleAnimation(pool, bubbles) {
     bubble.style.width = `${diameter}px`;
     bubble.style.height = `${diameter}px`;
 
-    // Choose an animation variant: always drift/deflate/pop
+    // Choose an animation variant: drift / deflate / pop
     const roll = Math.random();
     let variant;
-    if (roll > 0.6) {
+    if (roll > 0.65) {
       variant = 'pop';
-    } else if (roll > 0.3) {
+    } else if (roll > 0.35) {
       variant = 'deflate';
     } else {
       variant = 'drift';
@@ -35,9 +35,9 @@ function initBubbleAnimation(pool, bubbles) {
     bubble.classList.add(`bubble-variant-${variant}`);
 
     // Duration & delay per bubble
-    let duration = 16 + Math.random() * 6; // 16–22s
-    if (variant === 'pop') {
-      duration = 8 + Math.random() * 4; // quicker for pops
+    let duration = 18 + Math.random() * 6; // 18–24s for soft drift
+    if (variant === 'pop' || variant === 'deflate') {
+      duration = 9 + Math.random() * 5; // 9–14s for zippier effects
     }
     const delay = index * 2 + Math.random() * 1.5;
 
