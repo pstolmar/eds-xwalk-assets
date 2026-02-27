@@ -19,7 +19,7 @@ function initBubbleAnimation(container, bubbles) {
 }
 
 export default function decorate(block) {
-  // 1. Find potential "row" elements with max tolerance
+  // 1. Find potential "row" elements with max tolerance:
   //    - First try: wrapper DIV + child DIVs (container + items)
   //    - Fallback: direct child DIVs (old one-row layout)
   let rows = [...block.querySelectorAll(':scope > div > div')];
@@ -44,10 +44,9 @@ export default function decorate(block) {
 
     // Try to derive size from model field or second paragraph, fallback to medium
     let size = 'medium';
-    const sizeEl =
-      row.querySelector('[data-aue-prop="size"]') ||
-      row.querySelector('p:nth-of-type(2)') ||
-      row.querySelector('span:nth-of-type(2)');
+    const sizeEl = row.querySelector('[data-aue-prop="size"]')
+      || row.querySelector('p:nth-of-type(2)')
+      || row.querySelector('span:nth-of-type(2)');
 
     if (sizeEl && sizeEl.textContent) {
       const txt = sizeEl.textContent.trim().toLowerCase();
