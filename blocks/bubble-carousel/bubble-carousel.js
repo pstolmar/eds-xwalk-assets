@@ -8,14 +8,10 @@ function initBubbleAnimation(pool, bubbles) {
   const step = 100 / (count + 1);
 
   bubbles.forEach((bubble, index) => {
-    let x = step * (index + 1);
-    const jitter = (Math.random() - 0.5) * step * 0.4; // ±20% of step
-    x += jitter;
-    if (x < 5) x = 5;
-    if (x > 95) x = 95;
+    const x = step * (index + 1); // even spacing across width
 
-    const duration = 12 + Math.random() * 10; // 12–22s
-    const delay = index * 2 + Math.random() * 2; // stagger more
+    const duration = 14 + Math.random() * 6; // 14–20s
+    const delay = index * 2 + Math.random() * 1.5; // staggered start
 
     bubble.style.setProperty('--bubble-x', `${x}%`);
     bubble.style.animationDuration = `${duration}s`;
@@ -62,15 +58,19 @@ export default function decorate(block) {
 
   bubble.append(bubbleImg);
 
-  // Keep a small marker in the original block so it stays clickable in UE,
-  // but don't let it take a ton of vertical space.
+  // Keep a small marker only on author hosts so blocks are still clickable in UE,
+  // but never show it on Crosswalk (.aem.page/.aem.live).
+  const isAuthorHost = typeof window !== 'undefined' && window.location && window.location.hostname.indexOf('author-') !== -1;
+
   block.innerHTML = '';
   block.classList.add('bubble-carousel-origin');
 
-  const marker = document.createElement('div');
-  marker.classList.add('bubble-carousel-marker');
-  marker.textContent = 'Bubble';
-  block.append(marker);
+  if (isAuthorHost) {
+    const marker = document.createElement('div');
+    marker.classList.add('bubble-carousel-marker');
+    marker.textContent = 'Bubble';
+    block.append(marker);
+  }
 
   const pool = getOrCreatePool(block);
   pool.append(bubble);
