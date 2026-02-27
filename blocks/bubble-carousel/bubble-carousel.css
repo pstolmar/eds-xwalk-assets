@@ -1,8 +1,8 @@
 .bubble-carousel {
   position: relative;
   width: 100%;
-  height: 300px;
-  max-height: 400px;
+  height: 350px;
+  max-height: 600px;
   overflow: hidden;
 }
 
@@ -44,9 +44,9 @@
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   background:
-    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 70%), rgb(255 255 255 / 0%) 40%),
-    radial-gradient(circle at 80% 80%, rgb(255 255 255 / 30%), rgb(255 255 255 / 0%) 55%);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 80%), rgb(255 255 255 / 0%) 35%),
+    radial-gradient(circle at 80% 80%, rgb(0 0 0 / 15%), rgb(0 0 0 / 0%) 55%);
+  box-shadow: 0 14px 32px rgb(0 0 0 / 40%);
   overflow: hidden;
 }
 
@@ -59,49 +59,49 @@
 
 /* Size variants (base; JS applies ±20% random variation) */
 .bubble-small {
-  width: 110px;
-  height: 110px;
+  width: 130px;
+  height: 130px;
 }
 
 .bubble-medium {
-  width: 140px;
-  height: 140px;
+  width: 160px;
+  height: 160px;
 }
 
 .bubble-large {
-  width: 180px;
-  height: 180px;
+  width: 210px;
+  height: 210px;
 }
 
-/* Base gentle float, some vertical movement */
+/* Base gentle float: more vertical movement and fade */
 @keyframes bubble-float {
   0% {
-    transform: translate3d(-50%, 40%, 0) scale(1);
-    opacity: 1;
+    transform: translate3d(-50%, 45%, 0) scale(1);
+    opacity: 0;
   }
 
-  25% {
+  20% {
     transform: translate3d(-50%, -40%, 0) scale(1.03);
     opacity: 1;
   }
 
   50% {
-    transform: translate3d(-50%, 10%, 0) scale(0.98);
+    transform: translate3d(-50%, 15%, 0) scale(0.98);
     opacity: 1;
   }
 
-  75% {
-    transform: translate3d(-50%, -30%, 0) scale(1.02);
+  80% {
+    transform: translate3d(-50%, -35%, 0) scale(1.02);
     opacity: 1;
   }
 
   100% {
-    transform: translate3d(-50%, 40%, 0) scale(1);
-    opacity: 1;
+    transform: translate3d(-50%, 45%, 0) scale(1);
+    opacity: 0;
   }
 }
 
-/* Horizontal drift + more pronounced vertical oscillation */
+/* Horizontal drift + pronounced vertical oscillation */
 .bubble-variant-drift {
   animation-name: bubble-drift;
 }
@@ -109,27 +109,27 @@
 @keyframes bubble-drift {
   0% {
     transform: translate3d(-55%, 45%, 0) scale(1);
-    opacity: 1;
+    opacity: 0;
   }
 
-  25% {
+  20% {
     transform: translate3d(-45%, -45%, 0) scale(1.05);
     opacity: 1;
   }
 
   50% {
-    transform: translate3d(-50%, 15%, 0) scale(0.97);
+    transform: translate3d(-50%, 10%, 0) scale(0.97);
     opacity: 1;
   }
 
-  75% {
+  80% {
     transform: translate3d(-40%, -35%, 0) scale(1.03);
     opacity: 1;
   }
 
   100% {
     transform: translate3d(-55%, 45%, 0) scale(1);
-    opacity: 1;
+    opacity: 0;
   }
 }
 
@@ -140,21 +140,21 @@
 
 @keyframes bubble-deflate {
   0% {
-    transform: translate3d(-50%, 40%, 0) scale(1);
+    transform: translate3d(-50%, 45%, 0) scale(1);
+    opacity: 0;
+  }
+
+  15% {
+    transform: translate3d(-45%, -35%, 0) scale(1.08);
     opacity: 1;
   }
 
-  30% {
-    transform: translate3d(-45%, -30%, 0) scale(1.05);
-    opacity: 1;
-  }
-
-  60% {
-    transform: translate3d(-40%, -10%, 0) scale(0.9);
+  50% {
+    transform: translate3d(-40%, -15%, 0) scale(0.9);
     opacity: 0.9;
   }
 
-  85% {
+  80% {
     transform: translate3d(-30%, 20%, 0) scale(0.7);
     opacity: 0.4;
   }
@@ -165,7 +165,7 @@
   }
 }
 
-/* Pop: slight grow and shimmer, then quick fade/pop */
+/* Pop: quick grow/shimmer, then pop and vanish */
 .bubble-variant-pop {
   animation-name: bubble-pop;
 }
@@ -173,27 +173,27 @@
 @keyframes bubble-pop {
   0% {
     transform: translate3d(-50%, 30%, 0) scale(1);
-    opacity: 1;
+    opacity: 0;
   }
 
-  40% {
+  20% {
     transform: translate3d(-48%, -20%, 0) scale(1.08);
     opacity: 1;
   }
 
-  60% {
-    transform: translate3d(-46%, -30%, 0) scale(1.12);
+  40% {
+    transform: translate3d(-46%, -30%, 0) scale(1.15);
     opacity: 1;
   }
 
-  75% {
+  60% {
     transform: translate3d(-50%, -35%, 0) scale(0.9);
     opacity: 0.8;
   }
 
-  90% {
+  80% {
     transform: translate3d(-55%, -40%, 0) scale(0.6);
-    opacity: 0.2;
+    opacity: 0.3;
   }
 
   100% {
