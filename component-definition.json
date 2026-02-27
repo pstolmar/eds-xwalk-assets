@@ -15,7 +15,9 @@
             }
           }
         }
-      ],
+      ]
+    },
+    {
       "title": "Default Content",
       "id": "default",
       "components": [
