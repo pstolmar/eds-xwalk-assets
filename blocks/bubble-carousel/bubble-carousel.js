@@ -34,7 +34,8 @@ export default function decorate(block) {
     bubble.classList.add('bubble');
 
     const size = (sizeCell?.textContent || 'medium').trim().toLowerCase();
-    bubble.classList.add(`bubble--${size}`);
+    //bubble.classList.add(`bubble--${size}`);
+    bubble.classList.add(`bubble-${size}`);
 
     const bubbleImg = img.cloneNode(true);
     bubbleImg.loading = 'lazy';

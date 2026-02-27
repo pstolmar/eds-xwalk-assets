@@ -19,18 +19,36 @@
   display: block;
 }
 
-/* Size variants */
-.bubble--small  { width: 80px;  height: 80px; }
-.bubble--medium { width: 120px; height: 120px; }
-.bubble--large  { width: 180px; height: 180px; }
+/* Size variants – kebab-case, one declaration per line */
+.bubble-small {
+  width: 80px;
+  height: 80px;
+}
+
+.bubble-medium {
+  width: 120px;
+  height: 120px;
+}
+
+.bubble-large {
+  width: 180px;
+  height: 180px;
+}
 
 @keyframes bubble-float {
   0% {
     transform: translate3d(var(--bubble-x, 0), 110%, 0) scale(1);
     opacity: 0;
   }
-  10% { opacity: 1; }
-  90% { opacity: 1; }
+
+  10% {
+    opacity: 1;
+  }
+
+  90% {
+    opacity: 1;
+  }
+
   100% {
     transform: translate3d(var(--bubble-x, 0), -10%, 0) scale(0.8);
     opacity: 0;
