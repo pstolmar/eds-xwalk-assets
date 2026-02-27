@@ -18,61 +18,63 @@ function initBubbleAnimation(container, bubbles) {
   });
 }
 
+// Find or create a shared pool container within the closest section.
+function getOrCreatePool(block) {
+  const section = block.closest('.section, main, body') || document.body;
+  let pool = section.querySelector('.bubble-carousel-pool');
+
+  if (!pool) {
+    pool = document.createElement('div');
+    pool.classList.add('bubble-carousel', 'bubble-carousel-pool');
+    section.append(pool);
+  }
+
+  return pool;
+}
+
 export default function decorate(block) {
-  // Collect all images in this block – each one becomes a bubble.
-  const images = Array.from(block.querySelectorAll('img'));
+  const img = block.querySelector('img');
+  if (!img) return;
 
-  if (!images.length) {
-    return;
-  }
-
-  // Collect size fields in DOM order.
-  const sizeEls = Array.from(block.querySelectorAll('[data-aue-prop="size"]'));
-
-  const container = document.createElement('div');
-  container.classList.add('bubble-carousel');
-
-  const bubbles = [];
-
-  images.forEach((img, index) => {
-    let size = 'medium';
-
-    if (sizeEls[index] && sizeEls[index].textContent) {
-      const txt = sizeEls[index].textContent.trim().toLowerCase();
-      if (txt === 'small' || txt === 'medium' || txt === 'large') {
-        size = txt;
-      }
+  let size = 'medium';
+  const sizeEl = block.querySelector('[data-aue-prop="size"]');
+  if (sizeEl && sizeEl.textContent) {
+    const txt = sizeEl.textContent.trim().toLowerCase();
+    if (txt === 'small' || txt === 'medium' || txt === 'large') {
+      size = txt;
     }
-
-    const bubble = document.createElement('div');
-    bubble.classList.add('bubble', `bubble-${size}`);
-
-    const bubbleImg = img.cloneNode(true);
-    bubbleImg.loading = 'lazy';
-    bubbleImg.decoding = 'async';
-
-    // UE instrumentation for a media field
-    bubbleImg.setAttribute('data-aue-type', 'media');
-    bubbleImg.setAttribute('data-aue-prop', 'imageReference');
-    bubbleImg.setAttribute('data-aue-label', 'Bubble Image');
-
-    bubble.append(bubbleImg);
-    container.append(bubble);
-    bubbles.push(bubble);
-  });
-
-  // Replace original content only if we successfully created bubbles.
-  if (!bubbles.length) {
-    return;
   }
 
+  const bubble = document.createElement('div');
+  bubble.classList.add('bubble', `bubble-${size}`);
+
+  const bubbleImg = img.cloneNode(true);
+  bubbleImg.loading = 'lazy';
+  bubbleImg.decoding = 'async';
+
+  bubbleImg.setAttribute('data-aue-type', 'media');
+  bubbleImg.setAttribute('data-aue-prop', 'imageReference');
+  bubbleImg.setAttribute('data-aue-label', 'Bubble Image');
+
+  bubble.append(bubbleImg);
+
+  // Replace block content with a lightweight marker to keep UE happy.
   block.innerHTML = '';
-  block.append(container);
+  block.classList.add('bubble-carousel-origin');
 
-  // UE component instrumentation for the whole carousel
-  container.setAttribute('data-aue-type', 'component');
-  container.setAttribute('data-aue-label', 'Bubble Carousel');
-  container.setAttribute('data-aue-model', 'bubble-carousel');
+  // Add the bubble into a shared pool for this section.
+  const pool = getOrCreatePool(block);
+  pool.append(bubble);
 
-  initBubbleAnimation(container, bubbles);
+  // Instrument shared pool once per section.
+  if (!pool.dataset.aueInitialized) {
+    pool.setAttribute('data-aue-type', 'component');
+    pool.setAttribute('data-aue-label', 'Bubble Carousel');
+    pool.setAttribute('data-aue-model', 'bubble-carousel');
+    pool.dataset.aueInitialized = 'true';
+  }
+
+  // Start / update animation.
+  const bubbles = Array.from(pool.querySelectorAll('.bubble'));
+  initBubbleAnimation(pool, bubbles);
 }
