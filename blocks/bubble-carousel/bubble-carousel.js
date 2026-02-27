@@ -64,4 +64,3 @@ export default function decorate(block) {
 
   initBubbleAnimation(container, bubbles);
 }
-
