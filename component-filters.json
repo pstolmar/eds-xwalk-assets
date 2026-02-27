@@ -9,6 +9,7 @@
     "id": "section",
     "components": [
       "accordion",
+      "bubble-carousel",
       "button",
       "cards",
       "carousel",

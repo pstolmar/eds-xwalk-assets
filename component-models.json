@@ -161,6 +161,24 @@
     ]
   },
   {
+    "id": "bubble-carousel",
+    "fields": [
+      {
+        "component": "reference",
+        "name": "image",
+        "label": "Image",
+        "valueType": "string",
+        "multi": false
+      },
+      {
+        "component": "text",
+        "name": "size",
+        "label": "Size (small, medium, large)",
+        "valueType": "string"
+      }
+    ]
+  },
+  {
     "id": "card",
     "fields": [
       {
@@ -564,22 +582,6 @@
         "value": "",
         "label": "Content",
         "valueType": "string"
-      }
-    ]
-  },
-  {
-    "id": "bubble-carousel",
-    "fields": [
-      {
-        "component": "select",
-        "name": "density",
-        "label": "Bubble Density",
-        "valueType": "string",
-        "options": [
-          { "name": "Low", "value": "low" },
-          { "name": "Medium", "value": "medium" },
-          { "name": "High", "value": "high" }
-        ]
       }
     ]
   },
