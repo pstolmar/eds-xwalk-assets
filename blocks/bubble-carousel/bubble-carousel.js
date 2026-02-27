@@ -4,16 +4,18 @@ function initBubbleAnimation(pool, bubbles) {
     return;
   }
 
+  const count = bubbles.length || 1;
+  const step = 100 / (count + 1);
+
   bubbles.forEach((bubble, index) => {
-    const slot = index % 5;
-    const baseX = 10 + slot * 18; // 10, 28, 46, 64, 82
-    const jitter = (Math.random() * 8) - 4; // -4..+4
-    let x = baseX + jitter;
+    let x = step * (index + 1);
+    const jitter = (Math.random() - 0.5) * step * 0.4; // ±20% of step
+    x += jitter;
     if (x < 5) x = 5;
     if (x > 95) x = 95;
 
-    const duration = 10 + Math.random() * 10; // 10–20s
-    const delay = index * 1.5 + Math.random() * 1.5; // staggered
+    const duration = 12 + Math.random() * 10; // 12–22s
+    const delay = index * 2 + Math.random() * 2; // stagger more
 
     bubble.style.setProperty('--bubble-x', `${x}%`);
     bubble.style.animationDuration = `${duration}s`;
@@ -60,9 +62,15 @@ export default function decorate(block) {
 
   bubble.append(bubbleImg);
 
-  // Collapse original block to avoid big vertical gaps, but keep it in DOM
+  // Keep a small marker in the original block so it stays clickable in UE,
+  // but don't let it take a ton of vertical space.
   block.innerHTML = '';
   block.classList.add('bubble-carousel-origin');
+
+  const marker = document.createElement('div');
+  marker.classList.add('bubble-carousel-marker');
+  marker.textContent = 'Bubble';
+  block.append(marker);
 
   const pool = getOrCreatePool(block);
   pool.append(bubble);
