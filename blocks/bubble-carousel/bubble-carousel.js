@@ -19,38 +19,40 @@ function initBubbleAnimation(container, bubbles) {
 }
 
 export default function decorate(block) {
-  // NEW: support for container + items structure
-  let rowContainer = block;
-  if (
-    block.children.length === 1 &&
-    block.firstElementChild &&
-    block.firstElementChild.tagName === 'DIV'
-  ) {
-    rowContainer = block.firstElementChild;
+  // 1. Find potential "row" elements with max tolerance
+  //    - First try: wrapper DIV + child DIVs (container + items)
+  //    - Fallback: direct child DIVs (old one-row layout)
+  let rows = [...block.querySelectorAll(':scope > div > div')];
+
+  if (!rows.length) {
+    rows = [...block.querySelectorAll(':scope > div')];
   }
 
-  const rows = [...rowContainer.children];
+  // If still nothing, give up and leave original HTML intact
+  if (!rows.length) {
+    return;
+  }
+
   const container = document.createElement('div');
   container.classList.add('bubble-carousel');
 
   const bubbles = [];
 
   rows.forEach((row) => {
-    // Try various ways to find the image and size
     const img = row.querySelector('img');
     if (!img) return;
 
-    // Prefer an explicit "size" field, but fall back to any text in the row
-    let sizeText = '';
-    const sizeField =
+    // Try to derive size from model field or second paragraph, fallback to medium
+    let size = 'medium';
+    const sizeEl =
       row.querySelector('[data-aue-prop="size"]') ||
       row.querySelector('p:nth-of-type(2)') ||
       row.querySelector('span:nth-of-type(2)');
-    if (sizeField && sizeField.textContent) {
-      sizeText = sizeField.textContent.trim().toLowerCase();
-    }
 
-    const size = sizeText || 'medium';
+    if (sizeEl && sizeEl.textContent) {
+      const txt = sizeEl.textContent.trim().toLowerCase();
+      if (txt) size = txt;
+    }
 
     const bubble = document.createElement('div');
     bubble.classList.add('bubble', `bubble-${size}`);
@@ -69,7 +71,7 @@ export default function decorate(block) {
     bubbles.push(bubble);
   });
 
-  // If no rows found, leave the original content alone instead of wiping it
+  // If we didn't get any valid bubbles, bail and keep original HTML
   if (!bubbles.length) {
     return;
   }
