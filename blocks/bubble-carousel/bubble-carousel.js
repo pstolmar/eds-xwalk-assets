@@ -13,7 +13,7 @@ function initBubbleAnimation(pool, bubbles) {
     const duration = 14 + Math.random() * 6; // 14–20s
     const delay = index * 2 + Math.random() * 1.5; // staggered start
 
-    bubble.style.setProperty('--bubble-x', `${x}%`);
+    bubble.style.left = `${x}%`;
     bubble.style.animationDuration = `${duration}s`;
     bubble.style.animationDelay = `${delay}s`;
   });
@@ -36,10 +36,13 @@ export default function decorate(block) {
   const img = block.querySelector('img');
   if (!img) return;
 
+  // Try to read size from UE prop or from second paragraph text; default to medium.
   let size = 'medium';
-  const sizeEl = block.querySelector('[data-aue-prop="size"]');
-  if (sizeEl && sizeEl.textContent) {
-    const txt = sizeEl.textContent.trim().toLowerCase();
+  const sizePropEl = block.querySelector('[data-aue-prop="size"]');
+  const sizeTextEl = sizePropEl || block.querySelector('p:nth-of-type(2)');
+
+  if (sizeTextEl && sizeTextEl.textContent) {
+    const txt = sizeTextEl.textContent.trim().toLowerCase();
     if (txt === 'small' || txt === 'medium' || txt === 'large') {
       size = txt;
     }
@@ -58,20 +61,25 @@ export default function decorate(block) {
 
   bubble.append(bubbleImg);
 
-  // Keep a small marker only on author hosts so blocks are still clickable in UE,
-  // but never show it on Crosswalk (.aem.page/.aem.live).
-  const isAuthorHost = typeof window !== 'undefined' && window.location && window.location.hostname.indexOf('author-') !== -1;
+  // Decide once whether we are on author or on Crosswalk.
+  const isAuthorHost = typeof window !== 'undefined'
+    && window.location
+    && window.location.hostname.indexOf('author-') !== -1;
 
+  // Clear block content and mark it as an origin.
   block.innerHTML = '';
   block.classList.add('bubble-carousel-origin');
 
+  // On author, keep a small marker so the block stays clickable in UE.
   if (isAuthorHost) {
+    block.classList.add('bubble-carousel-origin-author');
     const marker = document.createElement('div');
     marker.classList.add('bubble-carousel-marker');
     marker.textContent = 'Bubble';
     block.append(marker);
   }
 
+  // Add this bubble to the shared pool for the section.
   const pool = getOrCreatePool(block);
   pool.append(bubble);
 
