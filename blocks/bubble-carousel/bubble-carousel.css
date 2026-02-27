@@ -5,6 +5,18 @@
   overflow: hidden;
 }
 
+.bubble-carousel-pool {
+  margin-block: 2rem;
+}
+
+/* Collapse original block elements so they don't create big gaps */
+.bubble-carousel-origin {
+  position: relative;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
 .bubble {
   position: absolute;
   border-radius: 50%;
