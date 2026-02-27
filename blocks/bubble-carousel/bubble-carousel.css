@@ -1,12 +1,12 @@
 .bubble-carousel {
   position: relative;
   width: 100%;
-  height: min(40vh, 300px);
+  height: 220px;
   overflow: hidden;
 }
 
 .bubble-carousel-pool {
-  margin-block: 2rem;
+  margin-block: 1rem;
 }
 
 /* Small marker in the original block so it stays clickable in UE */
@@ -23,10 +23,11 @@
   color: #555;
 }
 
+/* Actual bubbles in the pooled layer */
 .bubble {
   position: absolute;
-  bottom: 0;
-  transform: translate3d(-50%, 0, 0); /* center on left% */
+  top: 50%;
+  transform: translate3d(-50%, 0, 0);
   border-radius: 50%;
   will-change: transform, opacity;
   animation-name: bubble-float;
@@ -48,37 +49,44 @@
 
 /* Size variants */
 .bubble-small {
-  width: 80px;
-  height: 80px;
+  width: 72px;
+  height: 72px;
 }
 
 .bubble-medium {
-  width: 120px;
-  height: 120px;
+  width: 104px;
+  height: 104px;
 }
 
 .bubble-large {
-  width: 160px;
-  height: 160px;
+  width: 136px;
+  height: 136px;
 }
 
 @keyframes bubble-float {
   0% {
-    transform: translate3d(-50%, 110%, 0) scale(1);
-    opacity: 0;
-  }
-
-  10% {
+    transform: translate3d(-50%, 40%, 0) scale(1);
     opacity: 1;
   }
 
-  90% {
+  25% {
+    transform: translate3d(-50%, -40%, 0) scale(1.03);
+    opacity: 1;
+  }
+
+  50% {
+    transform: translate3d(-50%, 10%, 0) scale(0.98);
+    opacity: 1;
+  }
+
+  75% {
+    transform: translate3d(-50%, -30%, 0) scale(1.02);
     opacity: 1;
   }
 
   100% {
-    transform: translate3d(-50%, -10%, 0) scale(0.9);
-    opacity: 0;
+    transform: translate3d(-50%, 40%, 0) scale(1);
+    opacity: 1;
   }
 }
 
