@@ -61,20 +61,25 @@ export default function decorate(block) {
 
   bubble.append(bubbleImg);
 
-  // Keep a small marker only on author hosts so blocks are still clickable in UE,
-  // but never show it on Crosswalk (.aem.page/.aem.live).
-  const isAuthorHost = typeof window !== 'undefined' && window.location && window.location.hostname.indexOf('author-') !== -1;
+  // Decide once whether we are on author or on Crosswalk.
+  const isAuthorHost = typeof window !== 'undefined'
+    && window.location
+    && window.location.hostname.indexOf('author-') !== -1;
 
+  // Clear block content and mark it as an origin.
   block.innerHTML = '';
   block.classList.add('bubble-carousel-origin');
 
+  // On author, keep a small marker so the block stays clickable in UE.
   if (isAuthorHost) {
+    block.classList.add('bubble-carousel-origin-author');
     const marker = document.createElement('div');
     marker.classList.add('bubble-carousel-marker');
     marker.textContent = 'Bubble';
     block.append(marker);
   }
 
+  // Add this bubble to the shared pool for the section.
   const pool = getOrCreatePool(block);
   pool.append(bubble);
 

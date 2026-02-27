@@ -9,9 +9,18 @@
   margin-block: 1rem;
 }
 
-/* Small marker in the original block so it stays clickable in UE */
+/* Origin blocks: collapsed by default (Crosswalk / publish) */
 .bubble-carousel-origin {
+  margin: 0;
+  padding: 0;
+  height: 0;
+  overflow: visible;
+}
+
+/* On author, we expand the origin slightly so the marker is clickable */
+.bubble-carousel-origin-author {
   margin: 0.25rem 0;
+  height: auto;
 }
 
 .bubble-carousel-marker {
