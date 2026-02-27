@@ -4,8 +4,6 @@ function initBubbleAnimation(pool, bubbles) {
     return;
   }
 
-  const count = bubbles.length || 1;
-
   bubbles.forEach((bubble, index) => {
     const slot = index % 5;
     const baseX = 10 + slot * 18; // 10, 28, 46, 64, 82
