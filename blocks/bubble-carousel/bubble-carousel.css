@@ -1,7 +1,7 @@
 .bubble-carousel {
   position: relative;
   width: 100%;
-  height: min(60vh, 600px);
+  height: min(60vh, 400px);
   overflow: hidden;
 }
 
@@ -10,6 +10,11 @@
   border-radius: 50%;
   will-change: transform, opacity;
   animation: bubble-float 12s linear infinite;
+  background:
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 70%), rgb(255 255 255 / 0%) 40%),
+    radial-gradient(circle at 80% 80%, rgb(255 255 255 / 30%), rgb(255 255 255 / 0%) 55%);
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  overflow: hidden;
 }
 
 .bubble img {
@@ -19,7 +24,7 @@
   display: block;
 }
 
-/* Size variants – kebab-case, one declaration per line */
+/* Size variants */
 .bubble-small {
   width: 80px;
   height: 80px;
@@ -66,4 +71,3 @@
     margin: 0.5rem;
   }
 }
-

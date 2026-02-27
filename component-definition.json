@@ -115,7 +115,7 @@
           }
         },
         {
-          "title": "Bubble Carousel",
+          "title": "Bubble",
           "id": "bubble-carousel",
           "plugins": {
             "xwalk": {
