@@ -19,38 +19,29 @@ function initBubbleAnimation(container, bubbles) {
 }
 
 export default function decorate(block) {
-  // 1. Find potential "row" elements with max tolerance:
-  //    - First try: wrapper DIV + child DIVs (container + items)
-  //    - Fallback: direct child DIVs (old one-row layout)
-  let rows = [...block.querySelectorAll(':scope > div > div')];
+  // Collect all images in this block – each one becomes a bubble.
+  const images = Array.from(block.querySelectorAll('img'));
 
-  if (!rows.length) {
-    rows = [...block.querySelectorAll(':scope > div')];
-  }
-
-  // If still nothing, give up and leave original HTML intact
-  if (!rows.length) {
+  if (!images.length) {
     return;
   }
+
+  // Collect size fields in DOM order.
+  const sizeEls = Array.from(block.querySelectorAll('[data-aue-prop="size"]'));
 
   const container = document.createElement('div');
   container.classList.add('bubble-carousel');
 
   const bubbles = [];
 
-  rows.forEach((row) => {
-    const img = row.querySelector('img');
-    if (!img) return;
-
-    // Try to derive size from model field or second paragraph, fallback to medium
+  images.forEach((img, index) => {
     let size = 'medium';
-    const sizeEl = row.querySelector('[data-aue-prop="size"]')
-      || row.querySelector('p:nth-of-type(2)')
-      || row.querySelector('span:nth-of-type(2)');
 
-    if (sizeEl && sizeEl.textContent) {
-      const txt = sizeEl.textContent.trim().toLowerCase();
-      if (txt) size = txt;
+    if (sizeEls[index] && sizeEls[index].textContent) {
+      const txt = sizeEls[index].textContent.trim().toLowerCase();
+      if (txt === 'small' || txt === 'medium' || txt === 'large') {
+        size = txt;
+      }
     }
 
     const bubble = document.createElement('div');
@@ -70,7 +61,7 @@ export default function decorate(block) {
     bubbles.push(bubble);
   });
 
-  // If we didn't get any valid bubbles, bail and keep original HTML
+  // Replace original content only if we successfully created bubbles.
   if (!bubbles.length) {
     return;
   }
