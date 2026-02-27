@@ -13,7 +13,7 @@ function initBubbleAnimation(pool, bubbles) {
     const duration = 14 + Math.random() * 6; // 14–20s
     const delay = index * 2 + Math.random() * 1.5; // staggered start
 
-    bubble.style.setProperty('--bubble-x', `${x}%`);
+    bubble.style.left = `${x}%`;
     bubble.style.animationDuration = `${duration}s`;
     bubble.style.animationDelay = `${delay}s`;
   });
@@ -36,10 +36,13 @@ export default function decorate(block) {
   const img = block.querySelector('img');
   if (!img) return;
 
+  // Try to read size from UE prop or from second paragraph text; default to medium.
   let size = 'medium';
-  const sizeEl = block.querySelector('[data-aue-prop="size"]');
-  if (sizeEl && sizeEl.textContent) {
-    const txt = sizeEl.textContent.trim().toLowerCase();
+  const sizePropEl = block.querySelector('[data-aue-prop="size"]');
+  const sizeTextEl = sizePropEl || block.querySelector('p:nth-of-type(2)');
+
+  if (sizeTextEl && sizeTextEl.textContent) {
+    const txt = sizeTextEl.textContent.trim().toLowerCase();
     if (txt === 'small' || txt === 'medium' || txt === 'large') {
       size = txt;
     }
