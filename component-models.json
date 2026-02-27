@@ -164,10 +164,11 @@
     "id": "bubble-carousel",
     "fields": [
       {
-        "component": "field-group",
+        "component": "container",
         "name": "items",
         "label": "Bubbles",
         "multi": true,
+        "multiMax": 25,
         "fields": [
           {
             "component": "reference",
