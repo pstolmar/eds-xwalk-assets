@@ -1,7 +1,8 @@
 .bubble-carousel {
   position: relative;
   width: 100%;
-  height: 220px;
+  height: 350px;
+  max-height: 600px;
   overflow: hidden;
 }
 
@@ -43,9 +44,9 @@
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   background:
-    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 70%), rgb(255 255 255 / 0%) 40%),
-    radial-gradient(circle at 80% 80%, rgb(255 255 255 / 30%), rgb(255 255 255 / 0%) 55%);
-  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+    radial-gradient(circle at 30% 20%, rgb(255 255 255 / 80%), rgb(255 255 255 / 0%) 35%),
+    radial-gradient(circle at 80% 80%, rgb(0 0 0 / 15%), rgb(0 0 0 / 0%) 55%);
+  box-shadow: 0 14px 32px rgb(0 0 0 / 40%);
   overflow: hidden;
 }
 
@@ -56,46 +57,153 @@
   display: block;
 }
 
-/* Size variants */
+/* Size variants (base; JS applies ±20% random variation) */
 .bubble-small {
-  width: 72px;
-  height: 72px;
+  width: 130px;
+  height: 130px;
 }
 
 .bubble-medium {
-  width: 104px;
-  height: 104px;
+  width: 160px;
+  height: 160px;
 }
 
 .bubble-large {
-  width: 136px;
-  height: 136px;
+  width: 250px;
+  height: 250px;
 }
 
+/* Base gentle float: vertical and fade (used if no variant class is set) */
 @keyframes bubble-float {
   0% {
-    transform: translate3d(-50%, 40%, 0) scale(1);
-    opacity: 1;
+    transform: translate3d(-50%, 45%, 0) scale(1);
+    opacity: 0;
   }
 
-  25% {
+  20% {
     transform: translate3d(-50%, -40%, 0) scale(1.03);
     opacity: 1;
   }
 
   50% {
-    transform: translate3d(-50%, 10%, 0) scale(0.98);
+    transform: translate3d(-50%, 15%, 0) scale(0.98);
     opacity: 1;
   }
 
-  75% {
-    transform: translate3d(-50%, -30%, 0) scale(1.02);
+  80% {
+    transform: translate3d(-50%, -35%, 0) scale(1.02);
     opacity: 1;
   }
 
   100% {
-    transform: translate3d(-50%, 40%, 0) scale(1);
+    transform: translate3d(-50%, 45%, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Horizontal drift + pronounced vertical oscillation */
+.bubble-variant-drift {
+  animation-name: bubble-drift;
+}
+
+@keyframes bubble-drift {
+  0% {
+    transform: translate3d(-55%, 45%, 0) scale(1);
+    opacity: 0;
+  }
+
+  20% {
+    transform: translate3d(-45%, -45%, 0) scale(1.06);
     opacity: 1;
+  }
+
+  50% {
+    transform: translate3d(-50%, 10%, 0) scale(0.97);
+    opacity: 1;
+  }
+
+  80% {
+    transform: translate3d(-40%, -35%, 0) scale(1.03);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(-55%, 45%, 0) scale(1);
+    opacity: 0;
+  }
+}
+
+/* Deflate: toward camera, zig-zag horizontally, then shrink and fly off-screen */
+.bubble-variant-deflate {
+  animation-name: bubble-deflate;
+}
+
+@keyframes bubble-deflate {
+  0% {
+    transform: translate3d(-50%, 45%, 0) scale(0.9);
+    opacity: 0;
+  }
+
+  15% {
+    transform: translate3d(-48%, 0, 0) scale(1.2);
+    opacity: 1;
+  }
+
+  35% {
+    transform: translate3d(-40%, -40%, 0) scale(1.15);
+    opacity: 1;
+  }
+
+  55% {
+    transform: translate3d(-30%, 10%, 0) scale(0.95);
+    opacity: 0.9;
+  }
+
+  75% {
+    transform: translate3d(10%, -30%, 0) scale(0.8);
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translate3d(120%, 50%, 0) scale(0.5);
+    opacity: 0;
+  }
+}
+
+/* Pop: quick grow/shimmer, then pop and vanish with some sideways drift */
+.bubble-variant-pop {
+  animation-name: bubble-pop;
+}
+
+@keyframes bubble-pop {
+  0% {
+    transform: translate3d(-50%, 20%, 0) scale(0.9);
+    opacity: 0;
+  }
+
+  20% {
+    transform: translate3d(-48%, -15%, 0) scale(1.1);
+    opacity: 1;
+  }
+
+  40% {
+    transform: translate3d(-46%, -30%, 0) scale(1.2);
+    opacity: 1;
+  }
+
+  60% {
+    transform: translate3d(-50%, -40%, 0) scale(0.9);
+    opacity: 0.8;
+  }
+
+  80% {
+    transform: translate3d(-60%, -35%, 0) scale(0.6);
+    opacity: 0.3;
+  }
+
+  100% {
+    transform: translate3d(-80%, 60%, 0) scale(0.4);
+    opacity: 0;
   }
 }
 
