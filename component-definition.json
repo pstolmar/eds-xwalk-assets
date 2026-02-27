@@ -1,6 +1,21 @@
 {
   "groups": [
     {
+      "title": "Image Demo",
+      "id": "image-demo",
+      "components": [
+        {
+          "title": "Bubble Carousel",
+          "id": "bubble-carousel",
+          "plugins": {
+            "aem": {
+              "page": {
+                "resourceType": "eds-xwalk-assets/components/bubble-carousel"
+              }
+            }
+          }
+        }
+      ],
       "title": "Default Content",
       "id": "default",
       "components": [

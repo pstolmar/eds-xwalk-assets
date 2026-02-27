@@ -568,6 +568,22 @@
     ]
   },
   {
+    "id": "bubble-carousel",
+    "fields": [
+      {
+        "component": "select",
+        "name": "density",
+        "label": "Bubble Density",
+        "valueType": "string",
+        "options": [
+          { "name": "Low", "value": "low" },
+          { "name": "Medium", "value": "medium" },
+          { "name": "High", "value": "high" }
+        ]
+      }
+    ]
+  },
+  {
     "id": "video",
     "fields": [
       {
