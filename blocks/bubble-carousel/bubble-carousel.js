@@ -10,8 +10,36 @@ function initBubbleAnimation(pool, bubbles) {
   bubbles.forEach((bubble, index) => {
     const x = step * (index + 1); // even spacing across width
 
-    const duration = 14 + Math.random() * 6; // 14–20s
-    const delay = index * 2 + Math.random() * 1.5; // staggered start
+    // Random size around base Small/Medium/Large (±20%)
+    let baseSize = 140; // default
+    if (bubble.classList.contains('bubble-small')) {
+      baseSize = 110;
+    } else if (bubble.classList.contains('bubble-large')) {
+      baseSize = 180;
+    }
+    const factor = 0.8 + Math.random() * 0.4; // 0.8–1.2
+    const diameter = baseSize * factor;
+    bubble.style.width = `${diameter}px`;
+    bubble.style.height = `${diameter}px`;
+
+    // Choose an animation variant
+    const roll = Math.random();
+    let variant = 'float';
+    if (roll > 0.85) {
+      variant = 'pop';
+    } else if (roll > 0.7) {
+      variant = 'deflate';
+    } else if (roll > 0.4) {
+      variant = 'drift';
+    }
+    bubble.classList.add(`bubble-variant-${variant}`);
+
+    // Duration & delay per bubble
+    let duration = 16 + Math.random() * 6; // 16–22s
+    if (variant === 'pop') {
+      duration = 8 + Math.random() * 4; // quicker
+    }
+    const delay = index * 2 + Math.random() * 1.5;
 
     bubble.style.left = `${x}%`;
     bubble.style.animationDuration = `${duration}s`;
