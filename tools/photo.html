@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rendition Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+  background: #0f0f0f;
+  color: #e0e0e0;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+/* --- Header --- */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.thumb-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}
+.thumb-row .label {
+  font-size: 10px;
+  color: #888;
+  margin-right: 2px;
+}
+.thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  object-fit: cover;
+  transition: border-color 0.2s;
+}
+.thumb:hover, .thumb.active {
+  border-color: #4a9eff;
+}
+
+/* --- Tabs --- */
+.tab-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  border: 1px solid #333;
+  color: #aaa;
+  cursor: pointer;
+  background: transparent;
+  transition: all 0.15s;
+}
+.tab-btn:hover, .tab-btn.active {
+  background: #1a3a5c;
+  color: #7bb8f0;
+  border-color: #2a5a8c;
+}
+
+/* --- Controls --- */
+.controls {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 8px 12px;
+  background: #1a1a1a;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.controls label {
+  font-size: 11px;
+  color: #888;
+}
+.controls input[type="range"] {
+  width: 90px;
+  accent-color: #4a9eff;
+}
+.controls .val {
+  font-size: 11px;
+  color: #bbb;
+  min-width: 32px;
+  display: inline-block;
+}
+.controls button {
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #222;
+  color: #aaa;
+  cursor: pointer;
+}
+.controls button:hover {
+  background: #333;
+  color: #ccc;
+}
+
+/* --- Grid --- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+@media (max-width: 960px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* --- Card --- */
+.card {
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  background: #181818;
+  position: relative;
+}
+.card:hover {
+  border-color: #444;
+  transform: translateY(-2px);
+}
+.card:hover .download-icon {
+  opacity: 1;
+}
+.card-image {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  perspective: 800px;
+}
+.card-label {
+  padding: 6px 10px;
+}
+.card-label strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: #ddd;
+  display: block;
+}
+.card-label span {
+  font-size: 10px;
+  color: #777;
+}
+
+/* --- Download button on card --- */
+.download-icon {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  z-index: 10;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ccc;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.download-icon:hover {
+  background: rgba(40, 100, 200, 0.7);
+  color: #fff;
+}
+.download-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* --- Filmstrip --- */
+.filmstrip {
+  background: #2a1f14;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+.filmstrip-edge {
+  width: 14%;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  align-items: center;
+  padding: 4px 0;
+}
+.sprocket {
+  width: 55%;
+  aspect-ratio: 2 / 3;
+  background: #0e0a05;
+  border-radius: 2px;
+  border: 1px solid #4a3a28;
+  flex-shrink: 0;
+}
+.filmstrip-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid #5a4530;
+  border-right: 1px solid #5a4530;
+}
+.filmstrip-info {
+  font-family: monospace;
+  font-size: max(6px, 0.55em);
+  color: #8b7355;
+  padding: 1px 4px;
+  display: flex;
+  justify-content: space-between;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+.filmstrip-photo {
+  flex: 1;
+  overflow: hidden;
+  perspective: 800px;
+  min-height: 0;
+}
+.filmstrip-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Polaroid on dark background --- */
+.polaroid-mount {
+  background: #1a1a1a;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.polaroid-frame {
+  background: #fefefe;
+  padding: 5%;
+  padding-bottom: 16%;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  width: 80%;
+}
+.polaroid-frame img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.polaroid-text {
+  font-family: 'Caveat', cursive;
+  font-size: clamp(10px, 2.5vw, 14px);
+  color: #2a2520;
+  text-align: center;
+  position: absolute;
+  bottom: 3%;
+  left: 0;
+  right: 0;
+}
+
+/* --- Letterbox 16:9 --- */
+.letterbox {
+  background: #000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 800px;
+}
+.letterbox img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+  flex-shrink: 0;
+}
+
+/* --- White padded --- */
+.white-pad {
+  background: #f0f0f0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 800px;
+}
+.white-pad img {
+  display: block;
+  width: 60%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* --- Circle crop --- */
+.circle-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222;
+  perspective: 800px;
+}
+.circle-wrap img {
+  width: 72%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+/* --- Portrait 9:16 --- */
+.portrait-wrap {
+  background: #000;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+  perspective: 800px;
+}
+.portrait-wrap img {
+  height: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Top-left crop --- */
+.tl-crop {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 800px;
+}
+.tl-crop img {
+  display: block;
+  width: 200%;
+  height: 200%;
+  object-fit: cover;
+  object-position: 0% 0%;
+}
+
+/* --- Watermark overlay --- */
+.watermark-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 800px;
+}
+.watermark-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 3;
+}
+.watermark-text span {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: clamp(16px, 5vw, 28px);
+  font-weight: 600;
+  transform: rotate(-30deg);
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+/* --- Film grain --- */
+.grain-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 800px;
+}
+
+/* --- Bokeh --- */
+.bokeh-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 800px;
+}
+.bokeh-sharp {
+  position: absolute;
+  top: 18%;
+  left: 18%;
+  width: 64%;
+  height: 64%;
+  overflow: hidden;
+  border-radius: 4px;
+}
+.bokeh-sharp img {
+  display: block;
+  width: 156%;
+  height: 156%;
+  margin: -18% 0 0 -18%;
+  object-fit: cover;
+}
+
+/* --- Plain wrapper --- */
+.plain-wrap {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  perspective: 800px;
+}
+.plain-wrap img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* --- Zoom overlay --- */
+.zoom-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.94);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.zoom-overlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.zoom-container {
+  position: relative;
+  width: min(560px, 85vw);
+}
+.zoom-container .card-image {
+  border-radius: 8px;
+}
+.zoom-info {
+  text-align: center;
+  margin-top: 10px;
+  color: #888;
+  font-size: 12px;
+}
+.zoom-info strong {
+  color: #bbb;
+  font-weight: 500;
+  font-size: 13px;
+}
+.zoom-info code {
+  color: #5588aa;
+  font-size: 11px;
+}
+.zoom-download {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 1010;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background: rgba(30, 60, 100, 0.75);
+  border: 1px solid rgba(100, 160, 255, 0.25);
+  color: #aaccee;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.zoom-download:hover {
+  background: rgba(50, 100, 180, 0.9);
+  color: #fff;
+}
+.zoom-close-hint {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1010;
+  color: #555;
+  font-size: 11px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="tab-row" id="tabRow"></div>
+  <div class="thumb-row">
+    <span class="label">Source:</span>
+    <img class="thumb active" data-idx="0" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=80&h=80&fit=crop" alt="Mountains">
+    <img class="thumb" data-idx="1" src="https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=80&h=80&fit=crop" alt="Dog">
+    <img class="thumb" data-idx="2" src="https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=80&h=80&fit=crop" alt="Neon city">
+    <img class="thumb" data-idx="3" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=80&h=80&fit=crop" alt="Lake">
+    <img class="thumb" data-idx="4" src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=80&h=80&fit=crop" alt="Ocean">
+    <img class="thumb" data-idx="5" src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=80&h=80&fit=crop" alt="Cyberpunk street">
+  </div>
+</div>
+
+<div class="controls">
+  <label for="sliderPan">Pan</label>
+  <input type="range" id="sliderPan" min="-25" max="25" value="0" step="1">
+  <span class="val" id="valPan">0 deg</span>
+  <label for="sliderTilt">Tilt</label>
+  <input type="range" id="sliderTilt" min="-15" max="15" value="0" step="1">
+  <span class="val" id="valTilt">0 deg</span>
+  <label for="sliderZoom">Zoom</label>
+  <input type="range" id="sliderZoom" min="80" max="200" value="100" step="5">
+  <span class="val" id="valZoom">100%</span>
+  <button type="button" id="btnReset">Reset</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<div class="zoom-overlay" id="zoomOverlay">
+  <span class="zoom-close-hint">Click outside or press ESC to close</span>
+  <div class="zoom-container" id="zoomContainer"></div>
+  <div class="zoom-info" id="zoomInfo"></div>
+</div>
+
+<canvas id="exportCanvas" style="display:none"></canvas>
+
+<script>
+// =====================================================
+// DATA
+// =====================================================
+var sources = [
+  'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=800&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=800&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&h=800&fit=crop',
+  'https://images.unsplash.com/photo-1514565131-fce0801e5785?w=800&h=800&fit=crop'
+];
+
+var currentImage = 0;
+var panDeg = 0;
+var tiltDeg = 0;
+var zoomPct = 100;
+var activeTab = 'core';
+
+var downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+
+var coreRenditions = [
+  { id: 'orig',   name: 'Original',       desc: 'Unprocessed',       filter: 'none',                                                  wrap: 'plain'  },
+  { id: 'grey',   name: 'Greyscale',       desc: 'Classic B and W',   filter: 'grayscale(1) contrast(1.1)',                             wrap: 'plain'  },
+  { id: 'neg',    name: 'Film negative',   desc: '35mm cellulose',    filter: 'invert(1) hue-rotate(180deg) saturate(0.7) sepia(0.3)',  wrap: 'film'   },
+  { id: 'pol',    name: 'Polaroid',        desc: 'Dark mount print',  filter: 'saturate(0.85) contrast(1.05) sepia(0.08)',              wrap: 'polar'  },
+  { id: 'wide',   name: 'Wide 16:9',       desc: 'Cinematic crop',    filter: 'contrast(1.08) saturate(1.1)',                           wrap: 'lbox'   },
+  { id: 'vib',    name: 'Vibrant',         desc: 'Boosted color',     filter: 'saturate(1.8) contrast(1.05) brightness(1.02)',          wrap: 'plain'  },
+  { id: 'circ',   name: 'Circle crop',     desc: 'Avatar ready',      filter: 'saturate(1.05)',                                        wrap: 'circle' },
+  { id: 'port',   name: 'Portrait 9:16',   desc: 'Story or reel',     filter: 'none',                                                  wrap: 'port'   },
+  { id: 'wpad',   name: 'White padded',    desc: 'Matted widescreen', filter: 'none',                                                  wrap: 'wpad'   },
+  { id: 'tlcrop', name: 'Top-left crop',   desc: 'Quadrant zoom',     filter: 'contrast(1.05)',                                        wrap: 'tlcrop' },
+  { id: 'hicbw',  name: 'Hi-con B and W',  desc: 'Dramatic mono',     filter: 'grayscale(1) contrast(1.7) brightness(1.05)',            wrap: 'plain'  },
+  { id: 'vint',   name: 'Vintage warm',    desc: '70s faded look',    filter: 'sepia(0.35) contrast(0.95) brightness(1.05) saturate(0.8)', wrap: 'plain' }
+];
+
+var extRenditions = [
+  { id: 'wm',    name: 'Watermark',     desc: 'Draft overlay',    filter: 'brightness(0.98)',                                          wrap: 'wmark'  },
+  { id: 'uw',    name: 'Underwater',     desc: 'Deep ocean tint',  filter: 'hue-rotate(160deg) saturate(0.7) brightness(0.85) contrast(1.1)', wrap: 'plain' },
+  { id: 'sep',   name: 'Sepia',          desc: 'Antique tone',     filter: 'sepia(0.7) contrast(1.05)',                                 wrap: 'plain'  },
+  { id: 'teal',  name: 'Teal and orange', desc: 'Cinema grade',    filter: 'hue-rotate(-15deg) saturate(1.3) contrast(1.1)',            wrap: 'plain'  },
+  { id: 'inv',   name: 'Inverted',       desc: 'Color negative',   filter: 'invert(1)',                                                wrap: 'plain'  },
+  { id: 'oexp',  name: 'Overexposed',    desc: 'Blown highlights', filter: 'brightness(1.6) contrast(0.7) saturate(0.5)',               wrap: 'plain'  },
+  { id: 'wash',  name: 'Washed out',     desc: 'Faded print',      filter: 'contrast(0.6) brightness(1.2) saturate(0.4)',               wrap: 'plain'  },
+  { id: 'oof',   name: 'Out of focus',   desc: 'Bad capture',      filter: 'blur(4px) brightness(1.05)',                                wrap: 'plain'  },
+  { id: 'grain', name: 'Film grain',     desc: 'ISO 3200 texture', filter: 'contrast(1.15) brightness(0.95)',                           wrap: 'grain'  },
+  { id: 'leica', name: 'Leica M look',   desc: 'Warm contrast',    filter: 'contrast(1.2) saturate(0.85) sepia(0.12)',                  wrap: 'plain'  },
+  { id: 'nikon', name: 'Nikon D series',  desc: 'Cool neutral',    filter: 'contrast(1.05) saturate(0.95) hue-rotate(-5deg)',           wrap: 'plain'  },
+  { id: 'bokeh', name: 'Faux bokeh',     desc: 'Edge depth blur',  filter: 'none',                                                     wrap: 'bokeh'  }
+];
+
+// =====================================================
+// HELPERS
+// =====================================================
+function imgUrl() {
+  return sources[currentImage];
+}
+
+function camTransform() {
+  var s = zoomPct / 100;
+  return 'scale(' + s + ') rotateY(' + panDeg + 'deg) rotateX(' + (-tiltDeg) + 'deg)';
+}
+
+function imgStyle(filterVal, extra) {
+  return 'display:block;width:100%;height:100%;object-fit:cover;'
+    + 'filter:' + filterVal + ';'
+    + 'transform:' + camTransform() + (extra ? ' ' + extra : '') + ';'
+    + 'transform-origin:center;';
+}
+
+function sprocketHoles(count) {
+  var html = '';
+  for (var i = 0; i < count; i++) {
+    html += '<div class="sprocket"></div>';
+  }
+  return html;
+}
+
+
+// =====================================================
+// RENDITION HTML BUILDERS
+// =====================================================
+function buildRendition(r) {
+  var src = imgUrl();
+  var style = imgStyle(r.filter);
+
+  switch (r.wrap) {
+    case 'film':
+      return '<div class="filmstrip">'
+        + '<div class="filmstrip-edge">' + sprocketHoles(6) + '</div>'
+        + '<div class="filmstrip-center">'
+        + '<div class="filmstrip-info"><span>KODAK 5247</span><span>24A</span></div>'
+        + '<div class="filmstrip-photo"><img src="' + src + '" style="' + style + '"></div>'
+        + '<div class="filmstrip-info"><span>DX 24</span><span>SAFETY FILM</span></div>'
+        + '</div>'
+        + '<div class="filmstrip-edge">' + sprocketHoles(6) + '</div>'
+        + '</div>';
+
+    case 'polar':
+      return '<div class="polaroid-mount"><div class="polaroid-frame">'
+        + '<img src="' + src + '" style="' + imgStyle(r.filter) + 'height:auto;aspect-ratio:1/1;">'
+        + '<div class="polaroid-text">Intake asset</div>'
+        + '</div></div>';
+
+    case 'lbox':
+      return '<div class="letterbox">'
+        + '<img src="' + src + '" style="' + imgStyle(r.filter) + 'height:auto;">'
+        + '</div>';
+
+    case 'wpad':
+      return '<div class="white-pad">'
+        + '<img src="' + src + '" style="display:block;width:60%;aspect-ratio:16/9;object-fit:cover;'
+        + 'filter:' + r.filter + ';transform:' + camTransform() + ';transform-origin:center;">'
+        + '</div>';
+
+    case 'circle':
+      return '<div class="circle-wrap">'
+        + '<img src="' + src + '" style="' + imgStyle(r.filter) + 'width:72%;height:auto;aspect-ratio:1/1;border-radius:50%;">'
+        + '</div>';
+
+    case 'port':
+      return '<div class="portrait-wrap">'
+        + '<img src="' + src + '" style="' + imgStyle(r.filter) + 'width:auto;height:100%;aspect-ratio:9/16;">'
+        + '</div>';
+
+    case 'tlcrop':
+      return '<div class="tl-crop">'
+        + '<img src="' + src + '" style="display:block;width:200%;height:200%;object-fit:cover;object-position:0% 0%;'
+        + 'filter:' + r.filter + ';transform:rotateY(' + panDeg + 'deg) rotateX(' + (-tiltDeg) + 'deg);transform-origin:top left;">'
+        + '</div>';
+
+    case 'wmark':
+      return '<div class="watermark-wrap">'
+        + '<img src="' + src + '" style="' + style + '">'
+        + '<div class="watermark-text"><span>DRAFT</span></div>'
+        + '</div>';
+
+    case 'grain':
+      return '<div class="grain-wrap">'
+        + '<img src="' + src + '" style="' + style + '">'
+        + '<svg style="position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:overlay;opacity:0.3;pointer-events:none">'
+        + '<filter id="noise_' + r.id + '"><feTurbulence type="fractalNoise" baseFrequency="0.75" numOctaves="4" stitchTiles="stitch"/></filter>'
+        + '<rect width="100%" height="100%" filter="url(#noise_' + r.id + ')"/></svg>'
+        + '</div>';
+
+    case 'bokeh':
+      return '<div class="bokeh-wrap">'
+        + '<img src="' + src + '" style="' + imgStyle('blur(5px) brightness(0.93)') + '">'
+        + '<div class="bokeh-sharp"><img src="' + src + '" style="' + imgStyle('contrast(1.05)') + 'width:156%;height:156%;margin:-18% 0 0 -18%;"></div>'
+        + '</div>';
+
+    default:
+      return '<div class="plain-wrap">'
+        + '<img src="' + src + '" style="' + style + '">'
+        + '</div>';
+  }
+}
+
+// =====================================================
+// RENDER GRID
+// =====================================================
+function getActiveRenditions() {
+  if (activeTab === 'core') return coreRenditions;
+  if (activeTab === 'ext') return extRenditions;
+  return coreRenditions.concat(extRenditions);
+}
+
+function renderGrid() {
+  var items = getActiveRenditions();
+  var grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  items.forEach(function(r) {
+    var card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = '<button type="button" class="download-icon" title="Download ' + r.name + '">' + downloadSvg + '</button>'
+      + '<div class="card-image">' + buildRendition(r) + '</div>'
+      + '<div class="card-label"><strong>' + r.name + '</strong><span>' + r.desc + '</span></div>';
+
+    card.querySelector('.download-icon').addEventListener('click', function(e) {
+      e.stopPropagation();
+      downloadRendition(r.id);
+    });
+
+    card.querySelector('.card-image').addEventListener('click', function(e) {
+      e.stopPropagation();
+      openZoom(r);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+// =====================================================
+// ZOOM
+// =====================================================
+function openZoom(r) {
+  var container = document.getElementById('zoomContainer');
+  container.innerHTML = '<button type="button" class="zoom-download">' + downloadSvg + ' Download</button>'
+    + '<div class="card-image">' + buildRendition(r) + '</div>';
+
+  container.querySelector('.zoom-download').addEventListener('click', function(e) {
+    e.stopPropagation();
+    downloadRendition(r.id);
+  });
+
+  var info = document.getElementById('zoomInfo');
+  info.innerHTML = '<strong>' + r.name + '</strong> - ' + r.desc
+    + '<br><code>filter: ' + r.filter + '</code>';
+
+  document.getElementById('zoomOverlay').classList.add('visible');
+}
+
+function closeZoom() {
+  document.getElementById('zoomOverlay').classList.remove('visible');
+}
+
+document.getElementById('zoomOverlay').addEventListener('click', function(e) {
+  if (e.target === this || e.target.classList.contains('zoom-close-hint')) {
+    closeZoom();
+  }
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeZoom();
+});
+
+// =====================================================
+// DOWNLOAD
+// =====================================================
+function downloadRendition(renditionId) {
+  var allRenditions = coreRenditions.concat(extRenditions);
+  var r = null;
+  for (var i = 0; i < allRenditions.length; i++) {
+    if (allRenditions[i].id === renditionId) { r = allRenditions[i]; break; }
+  }
+  if (!r) return;
+
+  var canvas = document.getElementById('exportCanvas');
+  var ctx = canvas.getContext('2d');
+  var img = new Image();
+  img.crossOrigin = 'anonymous';
+
+  img.onload = function() {
+    var w = img.width;
+    var h = img.height;
+
+    switch (r.wrap) {
+      case 'lbox':
+        h = Math.round(w * 9 / 16);
+        break;
+      case 'port':
+        w = Math.round(h * 9 / 16);
+        break;
+      case 'tlcrop':
+        w = Math.round(img.width / 2);
+        h = Math.round(img.height / 2);
+        break;
+      case 'circle':
+        w = h = Math.min(img.width, img.height);
+        break;
+    }
+
+    // White padded - special layout
+    if (r.wrap === 'wpad') {
+      var innerW = Math.round(img.width * 0.6);
+      var innerH = Math.round(innerW * 9 / 16);
+      canvas.width = img.width;
+      canvas.height = Math.round(img.width * 0.56);
+      ctx.fillStyle = '#f0f0f0';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.filter = r.filter === 'none' ? 'none' : r.filter;
+      ctx.drawImage(img, (canvas.width - innerW) / 2, (canvas.height - innerH) / 2, innerW, innerH);
+      ctx.filter = 'none';
+      triggerDownload(canvas, r);
+      return;
+    }
+
+    // Polaroid - white frame with label
+    if (r.wrap === 'polar') {
+      var pad = Math.round(w * 0.06);
+      var bot = Math.round(w * 0.18);
+      var c2 = document.createElement('canvas');
+      c2.width = w + pad * 2;
+      c2.height = h + pad + bot;
+      var x2 = c2.getContext('2d');
+      x2.fillStyle = '#fefefe';
+      x2.fillRect(0, 0, c2.width, c2.height);
+      x2.filter = r.filter === 'none' ? 'none' : r.filter;
+      x2.drawImage(img, pad, pad, w, h);
+      x2.filter = 'none';
+      x2.font = Math.round(c2.width * 0.05) + 'px Caveat, cursive';
+      x2.fillStyle = '#2a2520';
+      x2.textAlign = 'center';
+      x2.fillText('Intake asset', c2.width / 2, c2.height - Math.round(bot * 0.28));
+      triggerDownload(c2, r);
+      return;
+    }
+
+    // Filmstrip - brown frame with sprocket holes
+    if (r.wrap === 'film') {
+      var edgeW = Math.round(w * 0.12);
+      var holeW = Math.round(edgeW * 0.6);
+      var holeH = Math.round(holeW * 1.5);
+      var c3 = document.createElement('canvas');
+      c3.width = w + edgeW * 2;
+      c3.height = h + 40;
+      var x3 = c3.getContext('2d');
+      x3.fillStyle = '#2a1f14';
+      x3.fillRect(0, 0, c3.width, c3.height);
+      // Border
+      x3.strokeStyle = '#5a4530';
+      x3.lineWidth = 1;
+      x3.strokeRect(edgeW, 16, w, h + 8);
+      // Image
+      x3.filter = r.filter === 'none' ? 'none' : r.filter;
+      x3.drawImage(img, edgeW, 20, w, h);
+      x3.filter = 'none';
+      // Sprocket holes - both sides, larger
+      for (var si = 0; si < 7; si++) {
+        var sy = si * (c3.height / 7) + c3.height / 14;
+        // Left holes
+        x3.fillStyle = '#0e0a05';
+        x3.fillRect(Math.round((edgeW - holeW) / 2), Math.round(sy - holeH / 2), holeW, holeH);
+        x3.strokeStyle = '#4a3a28';
+        x3.lineWidth = 1;
+        x3.strokeRect(Math.round((edgeW - holeW) / 2), Math.round(sy - holeH / 2), holeW, holeH);
+        // Right holes
+        x3.fillStyle = '#0e0a05';
+        x3.fillRect(c3.width - edgeW + Math.round((edgeW - holeW) / 2), Math.round(sy - holeH / 2), holeW, holeH);
+        x3.strokeStyle = '#4a3a28';
+        x3.lineWidth = 1;
+        x3.strokeRect(c3.width - edgeW + Math.round((edgeW - holeW) / 2), Math.round(sy - holeH / 2), holeW, holeH);
+      }
+      // Frame text
+      x3.font = '9px monospace';
+      x3.fillStyle = '#8b7355';
+      x3.fillText('KODAK 5247', edgeW + 3, 13);
+      x3.fillText('24A', w + edgeW - 22, 13);
+      x3.fillText('SAFETY FILM', edgeW + 3, h + 34);
+      x3.fillText('DX 24', w + edgeW - 28, h + 34);
+      triggerDownload(c3, r);
+      return;
+    }
+
+    // Circle crop
+    if (r.wrap === 'circle') {
+      var sz = Math.min(img.width, img.height);
+      var c4 = document.createElement('canvas');
+      c4.width = sz;
+      c4.height = sz;
+      var x4 = c4.getContext('2d');
+      x4.beginPath();
+      x4.arc(sz / 2, sz / 2, sz / 2, 0, Math.PI * 2);
+      x4.clip();
+      x4.filter = r.filter === 'none' ? 'none' : r.filter;
+      x4.drawImage(img, 0, 0, sz, sz);
+      triggerDownload(c4, r);
+      return;
+    }
+
+    // Default: apply filter and crop
+    canvas.width = w;
+    canvas.height = h;
+    ctx.filter = r.filter === 'none' ? 'none' : r.filter;
+    if (r.wrap === 'tlcrop') {
+      ctx.drawImage(img, 0, 0, img.width / 2, img.height / 2, 0, 0, w, h);
+    } else {
+      ctx.drawImage(img, 0, 0, w, h);
+    }
+    ctx.filter = 'none';
+
+    // Watermark overlay
+    if (r.wrap === 'wmark') {
+      ctx.save();
+      ctx.globalAlpha = 0.2;
+      ctx.fillStyle = '#ffffff';
+      ctx.translate(w / 2, h / 2);
+      ctx.rotate(-Math.PI / 6);
+      ctx.font = '600 ' + Math.round(w * 0.08) + 'px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText('DRAFT', 0, 0);
+      ctx.restore();
+    }
+
+    triggerDownload(canvas, r);
+  };
+
+  img.onerror = function() {
+    alert('Cannot download: image blocked by CORS. Works with local or same-origin images.');
+  };
+
+  img.src = imgUrl();
+}
+
+function triggerDownload(canvas, r) {
+  canvas.toBlob(function(blob) {
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = r.id + '-rendition.jpg';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function() {
+      URL.revokeObjectURL(a.href);
+      a.remove();
+    }, 200);
+  }, 'image/jpeg', 0.92);
+}
+
+// =====================================================
+// IMAGE SOURCE SELECTION
+// =====================================================
+function setImage(index) {
+  currentImage = index;
+  document.querySelectorAll('.thumb').forEach(function(t) {
+    t.classList.toggle('active', parseInt(t.dataset.idx, 10) === index);
+  });
+  renderGrid();
+}
+
+document.querySelectorAll('.thumb').forEach(function(t) {
+  t.addEventListener('click', function() {
+    setImage(parseInt(this.dataset.idx, 10));
+  });
+});
+
+// =====================================================
+// CAMERA CONTROLS
+// =====================================================
+document.getElementById('sliderPan').addEventListener('input', function() {
+  panDeg = parseInt(this.value, 10);
+  document.getElementById('valPan').textContent = panDeg + ' deg';
+  renderGrid();
+});
+
+document.getElementById('sliderTilt').addEventListener('input', function() {
+  tiltDeg = parseInt(this.value, 10);
+  document.getElementById('valTilt').textContent = tiltDeg + ' deg';
+  renderGrid();
+});
+
+document.getElementById('sliderZoom').addEventListener('input', function() {
+  zoomPct = parseInt(this.value, 10);
+  document.getElementById('valZoom').textContent = zoomPct + '%';
+  renderGrid();
+});
+
+document.getElementById('btnReset').addEventListener('click', function() {
+  panDeg = 0;
+  tiltDeg = 0;
+  zoomPct = 100;
+  document.getElementById('sliderPan').value = 0;
+  document.getElementById('sliderTilt').value = 0;
+  document.getElementById('sliderZoom').value = 100;
+  document.getElementById('valPan').textContent = '0 deg';
+  document.getElementById('valTilt').textContent = '0 deg';
+  document.getElementById('valZoom').textContent = '100%';
+  renderGrid();
+});
+
+// =====================================================
+// TABS
+// =====================================================
+function buildTabs() {
+  var row = document.getElementById('tabRow');
+  row.innerHTML = '';
+  var tabs = [
+    { id: 'core', label: 'Core (12)' },
+    { id: 'ext',  label: 'Extended (12)' },
+    { id: 'all',  label: 'All (24)' }
+  ];
+  tabs.forEach(function(tab) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'tab-btn' + (activeTab === tab.id ? ' active' : '');
+    btn.textContent = tab.label;
+    btn.addEventListener('click', function() {
+      activeTab = tab.id;
+      buildTabs();
+      renderGrid();
+    });
+    row.appendChild(btn);
+  });
+}
+
+// =====================================================
+// INIT
+// =====================================================
+buildTabs();
+renderGrid();
+</script>
+</body>
+</html>
