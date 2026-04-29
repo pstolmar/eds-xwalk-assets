@@ -46,6 +46,26 @@ body {
 .thumb:hover, .thumb.active {
   border-color: #4a9eff;
 }
+.add-image-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+  cursor: pointer;
+  border: 2px dashed #444;
+  background: #1a1a1a;
+  color: #888;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.add-image-btn:hover {
+  border-color: #4a9eff;
+  color: #4a9eff;
+  background: #222;
+}
 
 /* --- Tabs --- */
 .tab-row {
@@ -133,6 +153,20 @@ body {
 }
 .card:hover .download-icon {
   opacity: 1;
+}
+.card.selected {
+  border-color: #4a9eff;
+  background: #1a2a3a;
+}
+.card-checkbox {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 10;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #4a9eff;
 }
 .card-image {
   position: relative;
@@ -502,6 +536,73 @@ body {
   color: #555;
   font-size: 11px;
 }
+
+/* --- Studio Preview --- */
+.studio-preview {
+  background: #1a1a1a;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 12px;
+  display: none;
+}
+.studio-preview.visible {
+  display: block;
+}
+.studio-preview-content {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+.studio-preview-image {
+  flex: 1;
+  min-width: 280px;
+  max-width: 400px;
+}
+.studio-preview-image .card-image {
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #222;
+}
+.studio-preview-info {
+  flex: 1;
+  min-width: 200px;
+}
+.studio-preview-info h3 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #ddd;
+  margin-bottom: 8px;
+}
+.studio-preview-info ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+  font-size: 11px;
+  color: #999;
+}
+.studio-preview-info li {
+  padding: 3px 0;
+}
+.studio-download-btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  background: #2a5a8c;
+  border: 1px solid #4a9eff;
+  color: #e0e0e0;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.studio-download-btn:hover {
+  background: #3a6a9c;
+  color: #fff;
+}
+.studio-download-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 </style>
 </head>
 <body>
@@ -516,20 +617,35 @@ body {
     <img class="thumb" data-idx="3" src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=80&h=80&fit=crop" alt="Lake">
     <img class="thumb" data-idx="4" src="https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=80&h=80&fit=crop" alt="Ocean">
     <img class="thumb" data-idx="5" src="https://images.unsplash.com/photo-1514565131-fce0801e5785?w=80&h=80&fit=crop" alt="Cyberpunk street">
+    <button type="button" class="add-image-btn" id="addImageBtn" title="Add custom image">+</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
   </div>
 </div>
 
 <div class="controls">
   <label for="sliderPan">Pan</label>
-  <input type="range" id="sliderPan" min="-25" max="25" value="0" step="1">
+  <input type="range" id="sliderPan" min="-45" max="45" value="0" step="1">
   <span class="val" id="valPan">0 deg</span>
   <label for="sliderTilt">Tilt</label>
-  <input type="range" id="sliderTilt" min="-15" max="15" value="0" step="1">
+  <input type="range" id="sliderTilt" min="-45" max="45" value="0" step="1">
   <span class="val" id="valTilt">0 deg</span>
   <label for="sliderZoom">Zoom</label>
   <input type="range" id="sliderZoom" min="80" max="200" value="100" step="5">
   <span class="val" id="valZoom">100%</span>
   <button type="button" id="btnReset">Reset</button>
+</div>
+
+<div class="studio-preview" id="studioPreview">
+  <div class="studio-preview-content">
+    <div class="studio-preview-image">
+      <div class="card-image" id="studioPreviewImage"></div>
+    </div>
+    <div class="studio-preview-info">
+      <h3>Studio Composite</h3>
+      <ul id="studioEffectsList"></ul>
+      <button type="button" class="studio-download-btn" id="studioDownloadBtn">Download Composite</button>
+    </div>
+  </div>
 </div>
 
 <div class="grid" id="grid"></div>
@@ -560,6 +676,7 @@ var panDeg = 0;
 var tiltDeg = 0;
 var zoomPct = 100;
 var activeTab = 'core';
+var selectedEffects = [];
 
 var downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
@@ -706,6 +823,7 @@ function buildRendition(r) {
 function getActiveRenditions() {
   if (activeTab === 'core') return coreRenditions;
   if (activeTab === 'ext') return extRenditions;
+  // For 'all' and 'studio', show everything
   return coreRenditions.concat(extRenditions);
 }
 
@@ -713,26 +831,133 @@ function renderGrid() {
   var items = getActiveRenditions();
   var grid = document.getElementById('grid');
   grid.innerHTML = '';
+  var inStudio = activeTab === 'studio';
 
   items.forEach(function(r) {
     var card = document.createElement('div');
     card.className = 'card';
-    card.innerHTML = '<button type="button" class="download-icon" title="Download ' + r.name + '">' + downloadSvg + '</button>'
+    var isSelected = selectedEffects.indexOf(r.id) !== -1;
+    if (isSelected) card.classList.add('selected');
+
+    var checkboxHtml = inStudio
+      ? '<input type="checkbox" class="card-checkbox" data-effect-id="' + r.id + '" ' + (isSelected ? 'checked' : '') + '>'
+      : '';
+
+    card.innerHTML = checkboxHtml
+      + '<button type="button" class="download-icon" title="Download ' + r.name + '">' + downloadSvg + '</button>'
       + '<div class="card-image">' + buildRendition(r) + '</div>'
       + '<div class="card-label"><strong>' + r.name + '</strong><span>' + r.desc + '</span></div>';
+
+    if (inStudio) {
+      var checkbox = card.querySelector('.card-checkbox');
+      checkbox.addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleEffect(r.id);
+      });
+    }
 
     card.querySelector('.download-icon').addEventListener('click', function(e) {
       e.stopPropagation();
       downloadRendition(r.id);
     });
 
-    card.querySelector('.card-image').addEventListener('click', function(e) {
-      e.stopPropagation();
-      openZoom(r);
-    });
+    if (!inStudio) {
+      card.querySelector('.card-image').addEventListener('click', function(e) {
+        e.stopPropagation();
+        openZoom(r);
+      });
+    } else {
+      card.addEventListener('click', function(e) {
+        if (e.target.classList.contains('download-icon') || e.target.closest('.download-icon')) return;
+        toggleEffect(r.id);
+      });
+    }
 
     grid.appendChild(card);
   });
+
+  // Update studio preview visibility
+  document.getElementById('studioPreview').classList.toggle('visible', inStudio && selectedEffects.length > 0);
+  if (inStudio && selectedEffects.length > 0) {
+    updateStudioPreview();
+  }
+}
+
+// =====================================================
+// STUDIO MODE
+// =====================================================
+function toggleEffect(effectId) {
+  var idx = selectedEffects.indexOf(effectId);
+  if (idx === -1) {
+    selectedEffects.push(effectId);
+  } else {
+    selectedEffects.splice(idx, 1);
+  }
+  renderGrid();
+}
+
+function updateStudioPreview() {
+  var previewEl = document.getElementById('studioPreviewImage');
+  var listEl = document.getElementById('studioEffectsList');
+
+  // Build composite HTML
+  previewEl.innerHTML = buildCompositeRendition();
+
+  // Update effects list
+  var allRenditions = coreRenditions.concat(extRenditions);
+  var effectNames = selectedEffects.map(function(id) {
+    var r = allRenditions.find(function(x) { return x.id === id; });
+    return r ? r.name : id;
+  });
+
+  var effectsHtml = effectNames.map(function(name) {
+    return '<li>• ' + name + '</li>';
+  }).join('');
+
+  // Add camera settings if any are non-default
+  if (panDeg !== 0 || tiltDeg !== 0 || zoomPct !== 100) {
+    effectsHtml += '<li style="margin-top:8px;color:#7bb8f0;">Camera: ';
+    var settings = [];
+    if (zoomPct !== 100) settings.push('Zoom ' + zoomPct + '%');
+    if (panDeg !== 0) settings.push('Pan ' + panDeg + '°');
+    if (tiltDeg !== 0) settings.push('Tilt ' + tiltDeg + '°');
+    effectsHtml += settings.join(', ') + '</li>';
+  }
+
+  listEl.innerHTML = effectsHtml;
+}
+
+function buildCompositeRendition() {
+  // Get all selected renditions in order
+  var allRenditions = coreRenditions.concat(extRenditions);
+  var effects = selectedEffects.map(function(id) {
+    return allRenditions.find(function(r) { return r.id === id; });
+  }).filter(Boolean);
+
+  if (effects.length === 0) return '';
+
+  // Start with base image
+  var src = imgUrl();
+  var compositeFilter = 'none';
+  var compositeWrap = 'plain';
+
+  // Combine filters (last non-none wins for wrap, filters stack)
+  var filters = [];
+  effects.forEach(function(r) {
+    if (r.filter !== 'none') filters.push(r.filter);
+    if (r.wrap !== 'plain') compositeWrap = r.wrap; // Last special wrap wins
+  });
+
+  compositeFilter = filters.length > 0 ? filters.join(' ') : 'none';
+
+  // Build using the composite wrap and filter
+  var compositeRendition = {
+    id: 'composite',
+    filter: compositeFilter,
+    wrap: compositeWrap
+  };
+
+  return buildRendition(compositeRendition);
 }
 
 // =====================================================
@@ -772,11 +997,35 @@ document.addEventListener('keydown', function(e) {
 // =====================================================
 // DOWNLOAD
 // =====================================================
-function downloadRendition(renditionId) {
-  var allRenditions = coreRenditions.concat(extRenditions);
-  var r = null;
-  for (var i = 0; i < allRenditions.length; i++) {
-    if (allRenditions[i].id === renditionId) { r = allRenditions[i]; break; }
+function applyCameraTransform(ctx, width, height) {
+  // Move to center for transformations
+  ctx.translate(width / 2, height / 2);
+
+  // Apply zoom
+  var scale = zoomPct / 100;
+  ctx.scale(scale, scale);
+
+  // Apply pan (rotateY) - use skew for horizontal perspective
+  var panRad = panDeg * Math.PI / 180;
+  var skewX = Math.tan(panRad) * 0.5; // Reduced factor for subtlety
+  ctx.transform(1, 0, skewX, 1, 0, 0);
+
+  // Apply tilt (rotateX) - use skew for vertical perspective
+  var tiltRad = tiltDeg * Math.PI / 180;
+  var skewY = Math.tan(tiltRad) * 0.5; // Reduced factor for subtlety
+  ctx.transform(1, skewY, 0, 1, 0, 0);
+
+  // Move back from center
+  ctx.translate(-width / 2, -height / 2);
+}
+
+function downloadRendition(renditionId, customRendition) {
+  var r = customRendition;
+  if (!r) {
+    var allRenditions = coreRenditions.concat(extRenditions);
+    for (var i = 0; i < allRenditions.length; i++) {
+      if (allRenditions[i].id === renditionId) { r = allRenditions[i]; break; }
+    }
   }
   if (!r) return;
 
@@ -813,9 +1062,24 @@ function downloadRendition(renditionId) {
       canvas.height = Math.round(img.width * 0.56);
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.save();
+      // Apply camera transform centered on the image area
+      var imgX = (canvas.width - innerW) / 2;
+      var imgY = (canvas.height - innerH) / 2;
+      ctx.translate(imgX + innerW / 2, imgY + innerH / 2);
+      var scale = zoomPct / 100;
+      ctx.scale(scale, scale);
+      var panRad = panDeg * Math.PI / 180;
+      var skewX = Math.tan(panRad) * 0.5;
+      ctx.transform(1, 0, skewX, 1, 0, 0);
+      var tiltRad = tiltDeg * Math.PI / 180;
+      var skewY = Math.tan(tiltRad) * 0.5;
+      ctx.transform(1, skewY, 0, 1, 0, 0);
+      ctx.translate(-innerW / 2, -innerH / 2);
       ctx.filter = r.filter === 'none' ? 'none' : r.filter;
-      ctx.drawImage(img, (canvas.width - innerW) / 2, (canvas.height - innerH) / 2, innerW, innerH);
+      ctx.drawImage(img, 0, 0, innerW, innerH);
       ctx.filter = 'none';
+      ctx.restore();
       triggerDownload(canvas, r);
       return;
     }
@@ -830,9 +1094,22 @@ function downloadRendition(renditionId) {
       var x2 = c2.getContext('2d');
       x2.fillStyle = '#fefefe';
       x2.fillRect(0, 0, c2.width, c2.height);
+      x2.save();
+      // Apply camera transform centered on the photo area
+      x2.translate(pad + w / 2, pad + h / 2);
+      var scale = zoomPct / 100;
+      x2.scale(scale, scale);
+      var panRad = panDeg * Math.PI / 180;
+      var skewX = Math.tan(panRad) * 0.5;
+      x2.transform(1, 0, skewX, 1, 0, 0);
+      var tiltRad = tiltDeg * Math.PI / 180;
+      var skewY = Math.tan(tiltRad) * 0.5;
+      x2.transform(1, skewY, 0, 1, 0, 0);
+      x2.translate(-w / 2, -h / 2);
       x2.filter = r.filter === 'none' ? 'none' : r.filter;
-      x2.drawImage(img, pad, pad, w, h);
+      x2.drawImage(img, 0, 0, w, h);
       x2.filter = 'none';
+      x2.restore();
       x2.font = Math.round(c2.width * 0.05) + 'px Caveat, cursive';
       x2.fillStyle = '#2a2520';
       x2.textAlign = 'center';
@@ -856,10 +1133,22 @@ function downloadRendition(renditionId) {
       x3.strokeStyle = '#5a4530';
       x3.lineWidth = 1;
       x3.strokeRect(edgeW, 16, w, h + 8);
-      // Image
+      // Image with camera transform
+      x3.save();
+      x3.translate(edgeW + w / 2, 20 + h / 2);
+      var scale = zoomPct / 100;
+      x3.scale(scale, scale);
+      var panRad = panDeg * Math.PI / 180;
+      var skewX = Math.tan(panRad) * 0.5;
+      x3.transform(1, 0, skewX, 1, 0, 0);
+      var tiltRad = tiltDeg * Math.PI / 180;
+      var skewY = Math.tan(tiltRad) * 0.5;
+      x3.transform(1, skewY, 0, 1, 0, 0);
+      x3.translate(-w / 2, -h / 2);
       x3.filter = r.filter === 'none' ? 'none' : r.filter;
-      x3.drawImage(img, edgeW, 20, w, h);
+      x3.drawImage(img, 0, 0, w, h);
       x3.filter = 'none';
+      x3.restore();
       // Sprocket holes - both sides, larger
       for (var si = 0; si < 7; si++) {
         var sy = si * (c3.height / 7) + c3.height / 14;
@@ -897,8 +1186,21 @@ function downloadRendition(renditionId) {
       x4.beginPath();
       x4.arc(sz / 2, sz / 2, sz / 2, 0, Math.PI * 2);
       x4.clip();
+      x4.save();
+      // Apply camera transform
+      x4.translate(sz / 2, sz / 2);
+      var scale = zoomPct / 100;
+      x4.scale(scale, scale);
+      var panRad = panDeg * Math.PI / 180;
+      var skewX = Math.tan(panRad) * 0.5;
+      x4.transform(1, 0, skewX, 1, 0, 0);
+      var tiltRad = tiltDeg * Math.PI / 180;
+      var skewY = Math.tan(tiltRad) * 0.5;
+      x4.transform(1, skewY, 0, 1, 0, 0);
+      x4.translate(-sz / 2, -sz / 2);
       x4.filter = r.filter === 'none' ? 'none' : r.filter;
       x4.drawImage(img, 0, 0, sz, sz);
+      x4.restore();
       triggerDownload(c4, r);
       return;
     }
@@ -906,6 +1208,8 @@ function downloadRendition(renditionId) {
     // Default: apply filter and crop
     canvas.width = w;
     canvas.height = h;
+    ctx.save();
+    applyCameraTransform(ctx, w, h);
     ctx.filter = r.filter === 'none' ? 'none' : r.filter;
     if (r.wrap === 'tlcrop') {
       ctx.drawImage(img, 0, 0, img.width / 2, img.height / 2, 0, 0, w, h);
@@ -913,9 +1217,11 @@ function downloadRendition(renditionId) {
       ctx.drawImage(img, 0, 0, w, h);
     }
     ctx.filter = 'none';
+    ctx.restore();
 
     // Watermark overlay
     if (r.wrap === 'wmark') {
+      // Draw watermark on top (camera transform already applied to image)
       ctx.save();
       ctx.globalAlpha = 0.2;
       ctx.fillStyle = '#ffffff';
@@ -959,7 +1265,7 @@ function setImage(index) {
   document.querySelectorAll('.thumb').forEach(function(t) {
     t.classList.toggle('active', parseInt(t.dataset.idx, 10) === index);
   });
-  renderGrid();
+  updateAllPreviews();
 }
 
 document.querySelectorAll('.thumb').forEach(function(t) {
@@ -969,24 +1275,72 @@ document.querySelectorAll('.thumb').forEach(function(t) {
 });
 
 // =====================================================
+// CUSTOM IMAGE UPLOAD
+// =====================================================
+document.getElementById('addImageBtn').addEventListener('click', function() {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    var dataUrl = evt.target.result;
+    // Add to sources array
+    sources.push(dataUrl);
+    var newIdx = sources.length - 1;
+
+    // Create new thumbnail
+    var thumb = document.createElement('img');
+    thumb.className = 'thumb';
+    thumb.dataset.idx = newIdx;
+    thumb.src = dataUrl;
+    thumb.alt = 'Custom image';
+    thumb.addEventListener('click', function() {
+      setImage(parseInt(this.dataset.idx, 10));
+    });
+
+    // Insert before the + button
+    var addBtn = document.getElementById('addImageBtn');
+    addBtn.parentNode.insertBefore(thumb, addBtn);
+
+    // Automatically select the new image
+    setImage(newIdx);
+  };
+  reader.readAsDataURL(file);
+
+  // Reset file input so the same file can be selected again
+  e.target.value = '';
+});
+
+// =====================================================
 // CAMERA CONTROLS
 // =====================================================
+function updateAllPreviews() {
+  renderGrid();
+  if (activeTab === 'studio' && selectedEffects.length > 0) {
+    updateStudioPreview();
+  }
+}
+
 document.getElementById('sliderPan').addEventListener('input', function() {
   panDeg = parseInt(this.value, 10);
   document.getElementById('valPan').textContent = panDeg + ' deg';
-  renderGrid();
+  updateAllPreviews();
 });
 
 document.getElementById('sliderTilt').addEventListener('input', function() {
   tiltDeg = parseInt(this.value, 10);
   document.getElementById('valTilt').textContent = tiltDeg + ' deg';
-  renderGrid();
+  updateAllPreviews();
 });
 
 document.getElementById('sliderZoom').addEventListener('input', function() {
   zoomPct = parseInt(this.value, 10);
   document.getElementById('valZoom').textContent = zoomPct + '%';
-  renderGrid();
+  updateAllPreviews();
 });
 
 document.getElementById('btnReset').addEventListener('click', function() {
@@ -999,7 +1353,7 @@ document.getElementById('btnReset').addEventListener('click', function() {
   document.getElementById('valPan').textContent = '0 deg';
   document.getElementById('valTilt').textContent = '0 deg';
   document.getElementById('valZoom').textContent = '100%';
-  renderGrid();
+  updateAllPreviews();
 });
 
 // =====================================================
@@ -1011,7 +1365,8 @@ function buildTabs() {
   var tabs = [
     { id: 'core', label: 'Core (12)' },
     { id: 'ext',  label: 'Extended (12)' },
-    { id: 'all',  label: 'All (24)' }
+    { id: 'all',  label: 'All (24)' },
+    { id: 'studio', label: 'Studio' }
   ];
   tabs.forEach(function(tab) {
     var btn = document.createElement('button');
@@ -1025,6 +1380,40 @@ function buildTabs() {
     });
     row.appendChild(btn);
   });
+}
+
+// Studio download handler
+document.getElementById('studioDownloadBtn').addEventListener('click', function() {
+  downloadComposite();
+});
+
+function downloadComposite() {
+  if (selectedEffects.length === 0) return;
+
+  var allRenditions = coreRenditions.concat(extRenditions);
+  var effects = selectedEffects.map(function(id) {
+    return allRenditions.find(function(r) { return r.id === id; });
+  }).filter(Boolean);
+
+  // Combine filters
+  var filters = [];
+  var compositeWrap = 'plain';
+  effects.forEach(function(r) {
+    if (r.filter !== 'none') filters.push(r.filter);
+    if (r.wrap !== 'plain') compositeWrap = r.wrap;
+  });
+
+  var compositeFilter = filters.length > 0 ? filters.join(' ') : 'none';
+
+  // Create composite rendition and download
+  var compositeRendition = {
+    id: 'studio-composite',
+    name: 'Studio Composite',
+    filter: compositeFilter,
+    wrap: compositeWrap
+  };
+
+  downloadRendition(compositeRendition.id, compositeRendition);
 }
 
 // =====================================================
