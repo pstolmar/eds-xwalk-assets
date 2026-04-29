@@ -290,6 +290,12 @@ body {
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
   width: 80%;
 }
+.polaroid-photo-area {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
 .polaroid-frame img {
   display: block;
   width: 100%;
@@ -632,6 +638,8 @@ body {
   <label for="sliderZoom">Zoom</label>
   <input type="range" id="sliderZoom" min="80" max="200" value="100" step="5">
   <span class="val" id="valZoom">100%</span>
+  <label for="frameText">Frame text</label>
+  <input type="text" id="frameText" value="Intake asset" maxlength="30" style="padding:3px 6px;border-radius:4px;border:1px solid #444;background:#222;color:#ccc;font-size:11px;width:120px;">
   <button type="button" id="btnReset">Reset</button>
 </div>
 
@@ -677,6 +685,7 @@ var tiltDeg = 0;
 var zoomPct = 100;
 var activeTab = 'core';
 var selectedEffects = [];
+var frameText = 'Intake asset';
 
 var downloadSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
 
@@ -759,8 +768,10 @@ function buildRendition(r) {
 
     case 'polar':
       return '<div class="polaroid-mount"><div class="polaroid-frame">'
+        + '<div class="polaroid-photo-area">'
         + '<img src="' + src + '" style="' + imgStyle(r.filter) + 'height:auto;aspect-ratio:1/1;">'
-        + '<div class="polaroid-text">Intake asset</div>'
+        + '</div>'
+        + '<div class="polaroid-text">' + frameText + '</div>'
         + '</div></div>';
 
     case 'lbox':
@@ -1063,9 +1074,13 @@ function downloadRendition(renditionId, customRendition) {
       ctx.fillStyle = '#f0f0f0';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.save();
-      // Apply camera transform centered on the image area
+      // Clip to image area to keep transform within bounds
       var imgX = (canvas.width - innerW) / 2;
       var imgY = (canvas.height - innerH) / 2;
+      ctx.beginPath();
+      ctx.rect(imgX, imgY, innerW, innerH);
+      ctx.clip();
+      // Apply camera transform centered on the image area
       ctx.translate(imgX + innerW / 2, imgY + innerH / 2);
       var scale = zoomPct / 100;
       ctx.scale(scale, scale);
@@ -1095,6 +1110,10 @@ function downloadRendition(renditionId, customRendition) {
       x2.fillStyle = '#fefefe';
       x2.fillRect(0, 0, c2.width, c2.height);
       x2.save();
+      // Clip to photo area to keep transform within bounds
+      x2.beginPath();
+      x2.rect(pad, pad, w, h);
+      x2.clip();
       // Apply camera transform centered on the photo area
       x2.translate(pad + w / 2, pad + h / 2);
       var scale = zoomPct / 100;
@@ -1113,7 +1132,7 @@ function downloadRendition(renditionId, customRendition) {
       x2.font = Math.round(c2.width * 0.05) + 'px Caveat, cursive';
       x2.fillStyle = '#2a2520';
       x2.textAlign = 'center';
-      x2.fillText('Intake asset', c2.width / 2, c2.height - Math.round(bot * 0.28));
+      x2.fillText(frameText, c2.width / 2, c2.height - Math.round(bot * 0.28));
       triggerDownload(c2, r);
       return;
     }
@@ -1135,6 +1154,10 @@ function downloadRendition(renditionId, customRendition) {
       x3.strokeRect(edgeW, 16, w, h + 8);
       // Image with camera transform
       x3.save();
+      // Clip to photo area to keep transform within bounds
+      x3.beginPath();
+      x3.rect(edgeW, 20, w, h);
+      x3.clip();
       x3.translate(edgeW + w / 2, 20 + h / 2);
       var scale = zoomPct / 100;
       x3.scale(scale, scale);
@@ -1343,6 +1366,11 @@ document.getElementById('sliderZoom').addEventListener('input', function() {
   updateAllPreviews();
 });
 
+document.getElementById('frameText').addEventListener('input', function() {
+  frameText = this.value;
+  updateAllPreviews();
+});
+
 document.getElementById('btnReset').addEventListener('click', function() {
   panDeg = 0;
   tiltDeg = 0;
@@ -1353,6 +1381,8 @@ document.getElementById('btnReset').addEventListener('click', function() {
   document.getElementById('valPan').textContent = '0 deg';
   document.getElementById('valTilt').textContent = '0 deg';
   document.getElementById('valZoom').textContent = '100%';
+  frameText = 'Intake asset';
+  document.getElementById('frameText').value = frameText;
   updateAllPreviews();
 });
 
